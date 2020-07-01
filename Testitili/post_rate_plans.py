@@ -9,9 +9,59 @@ f = open('saved_token.pckl', 'rb')
 old_token = pickle.load(f)
 f.close()
 
+def restrictions(rate_plan):
+    try: 
+        return rate_plan['restrictions']
+    except: 
+        return None
+
+def pricingRule(rate_plan):
+    try: 
+        return rate_plan['pricingRule']
+    except: 
+        return None
+
+def surcharges(rate_plan):
+    try: 
+        return rate_plan['surcharges']
+    except: 
+        return [{
+        "adults": 2,
+        "type": "Absolute",
+        "value": 0
+        },
+        {
+        "adults": 3,
+        "type": "Absolute",
+        "value": 0
+        },
+        {
+        "adults": 4,
+        "type": "Absolute",
+        "value": 0
+        }]
+
+def ageCategories(rate_plan):
+    try: 
+        return rate_plan['ageCategories']
+    except: 
+        return None
+
+def includedServices(rate_plan):
+    try: 
+        return rate_plan['includedServices']
+    except: 
+        return None
+
+def companies(rate_plan):
+    try: 
+        return rate_plan['companies']
+    except: 
+        return None
+
 def rp_json(rate_plan): 
     return {
-        "code": str(rate_plan['code']) + 'NEW2',
+        "code": str(rate_plan['code']) + 'NEW9',
         "propertyId": rate_plan['property']['id'],
         "unitGroupId": rate_plan['unitGroup']['id'],
         "cancellationPolicyId": rate_plan['cancellationPolicy']['id'],
@@ -31,36 +81,12 @@ def rp_json(rate_plan):
         },
         "minGuaranteeType": rate_plan['minGuaranteeType'],
         "bookingPeriods": rate_plan['bookingPeriods'],
-        "restrictions": {
-            "minAdvance": {
-            "hours": 12,
-            "days": 180
-            },
-            "maxAdvance": {
-            "months": 24
-            }
-        },
-        "pricingRule": None,
-        "surcharges": [
-            {
-            "adults": 2,
-            "type": "Absolute",
-            "value": 10.0
-            }
-        ],
-        "ageCategories": [
-            {
-            "id": "MUC-BABY",
-            "surcharges": [
-                {
-                "adults": 1,
-                "value": 20
-                }
-            ]
-            }
-        ],
-        "includedServices": None,
-        #"companies": rate_plan['companies'],
+        "restrictions": restrictions(rate_plan),
+        "pricingRule": pricingRule(rate_plan),
+        "surcharges": surcharges(rate_plan),
+        "ageCategories": ageCategories(rate_plan),
+        "includedServices": includedServices(rate_plan),
+        "companies": companies(rate_plan),
         "subAccountId": rate_plan['subAccountId']
         }
 
