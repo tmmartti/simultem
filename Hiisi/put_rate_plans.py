@@ -17,7 +17,11 @@ def restrictions(rate_plan):
 
 def pricingRule(rate_plan):
     try: 
-        return rate_plan['pricingRule']
+        return {
+            "baseRatePlanId": rate_plan['baseRatePlan']['id'],
+            "type": rate_plan['baseRatePlan']['type'],
+            "value": rate_plan['baseRatePlan']['value']
+        }
     except: 
         return None
 
@@ -59,9 +63,15 @@ def companies(rate_plan):
     except: 
         return None
 
+def subaccountId(rate_plan):
+    try: 
+        return rate_plan['subaccountId']
+    except: 
+        return None
+
 def rp_json(rate_plan): 
     return {
-        "code": str(rate_plan['code']) + 'NEW9',
+        "code": str(rate_plan['code']),
         "propertyId": rate_plan['property']['id'],
         "unitGroupId": rate_plan['unitGroup']['id'],
         "cancellationPolicyId": rate_plan['cancellationPolicy']['id'],
@@ -77,7 +87,7 @@ def rp_json(rate_plan):
         },
         "description": {
             "de": 'German',
-            "en": rate_plan['description']['en'] or 'Rate'
+            "en": 'dippadappaduu'
         },
         "minGuaranteeType": rate_plan['minGuaranteeType'],
         "bookingPeriods": rate_plan['bookingPeriods'],
@@ -87,41 +97,34 @@ def rp_json(rate_plan):
         "ageCategories": ageCategories(rate_plan),
         "includedServices": includedServices(rate_plan),
         "companies": companies(rate_plan),
-        "subAccountId": rate_plan['subAccountId']
+        "subAccountId": subaccountId(rate_plan)
         }
 
-def post_rate_plans(token, rate_plans):
-    api_url = 'https://api.apaleo.com/rateplan/v1/rate-plans/'
+def post_rate_plans(token, properties, unit_types, rate_plans):
+    api_url_base = 'https://api.apaleo.com/rateplan/v1/rate-plans/'
 
     headers = {
     'Content-Type': 'application/json-patch+json',
     'Authorization': 'Bearer {0}'.format(token)
     }
-    for rate_plan in rate_plans:
+    rate_plans_ids = ids(properties, unit_types, rate_plans)
+    rp_package = rate_plan_list(rate_plans_ids)
+    for rate_plan in rp_package:
         print (rate_plan['id'])
+        api_url = api_url_base + rate_plan['id']
         data = json.dumps(rp_json(rate_plan))
-        response = requests.post(api_url, headers=headers, data=data)
-        print (json.loads(response.content))
+        response = requests.put(api_url, headers=headers, data=data)
 
 
 
-def result(rate_plans):
+def result(properties, unit_types, rate_plans):
     try:
-        output = post_rate_plans(old_token, rate_plans)
+        output = post_rate_plans(old_token, properties, unit_types, rate_plans)
         print ('Used an old token')
         return output
     except:
-        output = post_rate_plans(new_token, rate_plans)
+        output = post_rate_plans(new_token, properties, unit_types, rate_plans)
         print ('Used an new token')
         return output
 
-#proplist = ['CARSNLA','CENA','HKIHAAGA','HKIPASILA','HKISORKKA','KNUMMI','LOHJA',
-#'NUMMELA','RIKSU','TAMPERE1','TURKU1','VANTAA1','VANTAA2','VANTAA3']
-
-#units = ['STDSTU','STD1BR','FAMSTU','FAM1BR','FAM2BR','STD2BR','STDROOM','STD3BR','STD4BR']
-
-
-#rate_plan_list(ids(properties, unit_types, rate_plans))
-
-
-
+result(['BER'],['SGL','DBL'],['NONREF','FLEX'])
