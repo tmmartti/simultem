@@ -161,10 +161,10 @@ def result(rate_plans):
 #rate_plan_list(ids(properties, unit_types, rate_plans))
 
 rate_plan_json = rate_plan_list('all')
-custom_rule = lambda elem: elem['property']['id'] in ['CENA','HKIHAAGA','HKIPASILA','HKISORKKA','KNUMMI','LOHJA',
-'NUMMELA','RIKSU','TAMPERE1','VANTAA1','VANTAA2','VANTAA3']
+custom_rule = lambda elem: elem['property']['id'] in ['MUC']
 
 rate_plans = custom_list(rate_plan_json,custom_rule)
+result(rate_plans)
 
 
 
