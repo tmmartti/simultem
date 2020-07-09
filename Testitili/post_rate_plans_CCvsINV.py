@@ -1,6 +1,6 @@
 from rateplan_ids import ids
 from get_rate_plans import rate_plan_list, custom_list
-from get_rates_and_restrictions import rate_list
+from get_rates_and_restrictions import restriction_list
 from get_token import new_token
 import json
 import pickle
@@ -95,23 +95,49 @@ def rp_json(rate_plan):
         "subAccountId": rate_plan['subAccountId']
         }
 
-def patch_json(rate_plans):
-    rate_json = rate_list(rate_plans)
+def restriction_json(rate_plans):
+    rate_json = restriction_list(rate_plans)
     return rate_json
+
+def patch_json(restriction_dict, rate_plan):
+    try: 
+        minStay = restriction_dict[rate_plan]['minLengthOfStay']
+    except:
+        minStay = None
+    try: 
+        maxStay = restriction_dict[rate_plan]['maxLengthOfStay']
+    except:
+        maxStay = None
+    return [
+        {
+            "value": {
+                        "minLengthOfStay": minStay,
+                        "maxLengthOfStay": maxStay,
+                        "closed": False,
+                        "closedOnArrival": False,
+                        "closedOnDeparture": False
+                        },
+            "path": "/restrictions",
+            "op": "add"
+        }
+    ]
 
 def post_rate_plans(token, rate_plans):
     post_url = 'https://api.apaleo.com/rateplan/v1/rate-plans/'
+    patch_url_base = 'https://api.apaleo.com/rateplan/v1/rates?ratePlanIds='
+    patch_url_end = ',&from=2020-07-10T17%3A00%3A00%2B02%3A00&to=2024-08-03T17%3A00%3A00%2B02%3A00'
     headers = {
     'Content-Type': 'application/json-patch+json',
     'Authorization': 'Bearer {0}'.format(token)
     }
+    restriction_dict = restriction_json(rate_plans)
     for rate_plan in rate_plans:
         rate_plan_id = rate_plan['id']
         print (rate_plan_id)
         data = json.dumps(rp_json(rate_plan))
         requests.post(post_url, headers=headers, data=data)
-        patch_url = post_url + rate_plan_id + '/rates'
-        body = json.dumps(patch_json)
+        patch_url = patch_url_base + rate_plan_id + patch_url_end
+        body = json.dumps(patch_json(restriction_dict,rate_plan))
         requests.patch(patch_url, headers=headers, body=body)
 
 
