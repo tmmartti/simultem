@@ -1,5 +1,6 @@
 from rateplan_ids import ids
 from get_rate_plans import rate_plan_list, custom_list
+from get_rates_and_restrictions import rate_list
 from get_token import new_token
 import json
 import pickle
@@ -79,10 +80,14 @@ def rp_json(rate_plan):
             "de": 'German',
             "en": rate_plan['description']['en'] or 'Rate'
         },
-        "minGuaranteeType": rate_plan['minGuaranteeType'],
+        "minGuaranteeType": 'CreditCard',
         "bookingPeriods": rate_plan['bookingPeriods'],
         "restrictions": restrictions(rate_plan),
-        "pricingRule": pricingRule(rate_plan),
+        "pricingRule": {
+            "baseRatePlanId": rate_plan['id'],
+            "type": "Absolute",
+            "value": 0
+        },
         "surcharges": surcharges(rate_plan),
         "ageCategories": ageCategories(rate_plan),
         "includedServices": includedServices(rate_plan),
@@ -90,18 +95,24 @@ def rp_json(rate_plan):
         "subAccountId": rate_plan['subAccountId']
         }
 
-def post_rate_plans(token, rate_plans):
-    api_url = 'https://api.apaleo.com/rateplan/v1/rate-plans/'
+def patch_json(rate_plans):
+    rate_json = rate_list(rate_plans)
+    return rate_json
 
+def post_rate_plans(token, rate_plans):
+    post_url = 'https://api.apaleo.com/rateplan/v1/rate-plans/'
     headers = {
     'Content-Type': 'application/json-patch+json',
     'Authorization': 'Bearer {0}'.format(token)
     }
     for rate_plan in rate_plans:
-        print (rate_plan['id'])
+        rate_plan_id = rate_plan['id']
+        print (rate_plan_id)
         data = json.dumps(rp_json(rate_plan))
-        response = requests.post(api_url, headers=headers, data=data)
-        print (json.loads(response.content))
+        requests.post(post_url, headers=headers, data=data)
+        patch_url = post_url + rate_plan_id + '/rates'
+        body = json.dumps(patch_json)
+        requests.patch(patch_url, headers=headers, body=body)
 
 
 

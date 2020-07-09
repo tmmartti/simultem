@@ -47,8 +47,9 @@ def custom_list(rate_plan_json, custom_rule):
     filtered_list = list(filter(custom_rule, rate_plan_json))
     return filtered_list
 
-rate_plan_json = rate_plan_list('all')
-custom_rule = lambda elem: elem['property']['id'] != 'TKU1'
+#rate_plan_json = rate_plan_list('all')
+#custom_rule = lambda elem: elem['property']['id'] in ['CENA','HKIHAAGA','HKIPASILA','HKISORKKA','KNUMMI','LOHJA',
+#'NUMMELA','RIKSU','TAMPERE1','VANTAA1','VANTAA2',
+#'VANTAA3'] and 'promoCodes' in elem and 'PARTNER' in elem['promoCodes']
 
-print (len(custom_list(rate_plan_json,lambda elem: elem['property']['id'] in ['CENA','HKIHAAGA','HKIPASILA','HKISORKKA','KNUMMI','LOHJA',
-'NUMMELA','RIKSU','TAMPERE1','VANTAA1','VANTAA2','VANTAA3'])))
+#print (len(custom_list(rate_plan_json,custom_rule)))
