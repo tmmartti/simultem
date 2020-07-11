@@ -37,7 +37,7 @@ def get_rates_and_restrictions(token, ratePlanIds):
 def rate_list(ratePlanIds):    
     try:
         rate_plans = get_rates_and_restrictions(old_token, ratePlanIds)
-        print ('Used an old token')
+        print ('Used an old token for get_rates_and_restrictions')
         return rate_plans
     except:
         rate_plans = get_rates_and_restrictions(new_token, ratePlanIds)
@@ -53,7 +53,7 @@ def restriction_list(ratePlanIds):
                 restrictions[elem] = rates_and_restrictions[elem]['rates'][0]['restrictions']
             except:
                 restrictions[elem] = None
-        print ('Used an old token')
+        print ('Used an old token get_rates_and_restrictions')
         return restrictions
     except:
         rates_and_restrictions = get_rates_and_restrictions(new_token, ratePlanIds)
@@ -66,10 +66,8 @@ def restriction_list(ratePlanIds):
         print ('Used a new token')
         return restrictions
 
-custom_rule = lambda elem: elem['property']['id'] not in ['CENA','HKIHAAGA','HKIPASILA','HKISORKKA','KNUMMI','LOHJA',
-'NUMMELA','RIKSU','TAMPERE1','VANTAA1','VANTAA2',
-'VANTAA3'] and 'promoCodes' in elem and 'PARTNER' in elem['promoCodes']
+#custom_rule = lambda elem: elem['property']['id'] in ['MUC']
+#ratePlanIds = rate_plan_ids(custom_rule)
 
-ratePlanIds = rate_plan_ids(custom_rule)
-
-print (restriction_list(ratePlanIds))
+#print (restriction_list(ratePlanIds))
+#print ('here2')

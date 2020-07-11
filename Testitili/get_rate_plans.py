@@ -31,15 +31,15 @@ def get_rate_plans(token, ratePlanIds):
                 responses.append(append_json)
             else:
                 print ('Failed to get rate plan with id' + x)
-        return {'ratePlans': responses}
+        return responses
     
 def rate_plan_list(ratePlanIds):    
     try:
-        rate_plans = get_rate_plans(old_token, ratePlanIds)['ratePlans']
-        print ('Used an old token')
+        rate_plans = get_rate_plans(old_token, ratePlanIds)
+        print ('Used an old token for get_rate_plans')
         return rate_plans
     except:
-        rate_plans = get_rate_plans(new_token, ratePlanIds)['ratePlans']
+        rate_plans = get_rate_plans(new_token, ratePlanIds)
         print ('Used a new token')
         return rate_plans
 
@@ -47,9 +47,10 @@ def custom_list(rate_plan_json, custom_rule):
     filtered_list = list(filter(custom_rule, rate_plan_json))
     return filtered_list
 
-#rate_plan_json = rate_plan_list('all')
-#custom_rule = lambda elem: elem['property']['id'] in ['CENA','HKIHAAGA','HKIPASILA','HKISORKKA','KNUMMI','LOHJA',
-#'NUMMELA','RIKSU','TAMPERE1','VANTAA1','VANTAA2',
-#'VANTAA3'] and 'promoCodes' in elem and 'PARTNER' in elem['promoCodes']
+#rate_plan_json = rate_plan_list('all')['ratePlans']
 
-#print (len(custom_list(rate_plan_json,custom_rule)))
+#custom_rule = lambda elem: elem['property']['id'] in ['BER']
+
+#rate_plans = custom_list(rate_plan_json,custom_rule)
+#print (rate_plans[0])
+

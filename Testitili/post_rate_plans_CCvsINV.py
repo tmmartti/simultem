@@ -27,19 +27,19 @@ def surcharges(rate_plan):
         return rate_plan['surcharges']
     except: 
         return [{
-        "adults": 2,
-        "type": "Absolute",
-        "value": 0
-        },
-        {
-        "adults": 3,
-        "type": "Absolute",
-        "value": 0
-        },
-        {
-        "adults": 4,
-        "type": "Absolute",
-        "value": 0
+            "adults": 2,
+            "type": "Absolute",
+            "value": 0
+            },
+            {
+            "adults": 3,
+            "type": "Absolute",
+            "value": 0
+            },
+            {
+            "adults": 4,
+            "type": "Absolute",
+            "value": 0
         }]
 
 def ageCategories(rate_plan):
@@ -60,6 +60,62 @@ def companies(rate_plan):
     except: 
         return None
 
+def serviceType(rate_plan):
+    try: 
+        return rate_plan['serviceType']
+    except: 
+        return None
+
+def vatType(rate_plan):
+    try: 
+        return rate_plan['vatType']
+    except: 
+        return None
+
+def promoCodes(rate_plan):
+    try: 
+        return rate_plan['promoCodes']
+    except: 
+        return None
+
+def englishName(rate_plan):
+    try:
+        return rate_plan['name']['en']
+    except:
+        return rate_plan['name']
+
+def englishDescription(rate_plan):
+    try:
+        return rate_plan['description']['en']
+    except:
+        return rate_plan['description']
+
+def bookingPeriods(rate_plan):
+    try:
+        return rate_plan['bookingPeriods']
+    except:
+        return None
+
+def subAccountId(rate_plan):
+    try:
+        return rate_plan['subAccountId']
+    except:
+        return None
+
+def includedServices(rate_plan):
+    try :
+        result = []
+        for incl_serv in rate_plan['includedServices']:
+            service = {
+            "serviceId": incl_serv['service']['id'],
+            "grossPrice": incl_serv['grossPrice']
+            }
+            result.append(service)
+        return result
+    except:
+        return None
+            
+
 def rp_json(rate_plan): 
     return {
         "code": str(rate_plan['code']) + 'CC',
@@ -67,21 +123,21 @@ def rp_json(rate_plan):
         "unitGroupId": rate_plan['unitGroup']['id'],
         "cancellationPolicyId": rate_plan['cancellationPolicy']['id'],
         "channelCodes": rate_plan['channelCodes'],
-        "serviceType": rate_plan['serviceType'],
-        "vatType": rate_plan['vatType'],
-        "promoCodes": None,
+        "serviceType": 'Accommodation',
+        "vatType": 'Reduced',
+        "promoCodes": promoCodes(rate_plan),
         "isSubjectToCityTax": rate_plan['isSubjectToCityTax'],
         "timeSliceDefinitionId": rate_plan['timeSliceDefinition']['id'],
         "name": {
-            "de": 'German',
-            "en": rate_plan['name']['en'].replace('-','- Pay by Card -')
+            "de": englishName(rate_plan).replace('-','- Pay by Card -'),
+            "en": englishName(rate_plan).replace('-','- Pay by Card -')
         },
         "description": {
-            "de": 'German',
-            "en": rate_plan['description']['en'] or 'Rate'
+            "de": englishDescription(rate_plan) or 'Rate',
+            "en": englishDescription(rate_plan) or 'Rate'
         },
         "minGuaranteeType": 'CreditCard',
-        "bookingPeriods": rate_plan['bookingPeriods'],
+        "bookingPeriods": bookingPeriods(rate_plan),
         "restrictions": restrictions(rate_plan),
         "pricingRule": {
             "baseRatePlanId": rate_plan['id'],
@@ -92,20 +148,20 @@ def rp_json(rate_plan):
         "ageCategories": ageCategories(rate_plan),
         "includedServices": includedServices(rate_plan),
         "companies": companies(rate_plan),
-        "subAccountId": rate_plan['subAccountId']
+        "subAccountId": subAccountId(rate_plan)
         }
 
 def restriction_json(rate_plans):
     rate_json = restriction_list(rate_plans)
     return rate_json
 
-def patch_json(restriction_dict, rate_plan):
+def patch_json(restriction_dict, rate_plan_id):
     try: 
-        minStay = restriction_dict[rate_plan]['minLengthOfStay']
+        minStay = restriction_dict[rate_plan_id]['minLengthOfStay']
     except:
         minStay = None
     try: 
-        maxStay = restriction_dict[rate_plan]['maxLengthOfStay']
+        maxStay = restriction_dict[rate_plan_id]['maxLengthOfStay']
     except:
         maxStay = None
     return [
@@ -125,27 +181,42 @@ def patch_json(restriction_dict, rate_plan):
 def post_rate_plans(token, rate_plans):
     post_url = 'https://api.apaleo.com/rateplan/v1/rate-plans/'
     patch_url_base = 'https://api.apaleo.com/rateplan/v1/rates?ratePlanIds='
-    patch_url_end = ',&from=2020-07-10T17%3A00%3A00%2B02%3A00&to=2024-08-03T17%3A00%3A00%2B02%3A00'
+    patch_url_end = ',&from=2020-07-11T17%3A00%3A00%2B02%3A00&to=2024-08-03T17%3A00%3A00%2B02%3A00'
     headers = {
     'Content-Type': 'application/json-patch+json',
     'Authorization': 'Bearer {0}'.format(token)
     }
-    restriction_dict = restriction_json(rate_plans)
+    ratePlanIds = []
+    failed_posts = []
+    for rate_plan in rate_plans:
+        ratePlanIds.append(rate_plan['id'])
+    restriction_dict = restriction_json(ratePlanIds)
     for rate_plan in rate_plans:
         rate_plan_id = rate_plan['id']
+        rate_plan_code = rate_plan['code']
+        unit_type = rate_plan['unitGroup']['id'].split('-',1)[1]
+        property_id = rate_plan['property']['id']
         print (rate_plan_id)
+
         data = json.dumps(rp_json(rate_plan))
-        requests.post(post_url, headers=headers, data=data)
-        patch_url = patch_url_base + rate_plan_id + patch_url_end
-        body = json.dumps(patch_json(restriction_dict,rate_plan))
-        requests.patch(patch_url, headers=headers, body=body)
+        post_response = requests.post(post_url, headers=headers, data=data)
+        print (post_response)
+        if post_response.status_code != 201:
+            failed_posts.append(rate_plan_id)
+        patch_url = patch_url_base + property_id + '-' + rate_plan_code + 'CC' + '-' + unit_type + patch_url_end
+        patch_data = json.dumps(patch_json(restriction_dict,rate_plan_id))
+        print (patch_data)
+        print (patch_url)
+        patch_response = requests.patch(patch_url, headers=headers, data=patch_data)
+        print (patch_response)
+    print (failed_posts)
 
 
 
 def result(rate_plans):
     try:
         output = post_rate_plans(old_token, rate_plans)
-        print ('Used an old token')
+        print ('Used an old token for post_rate_plans')
         return output
     except:
         output = post_rate_plans(new_token, rate_plans)
@@ -160,10 +231,12 @@ def result(rate_plans):
 
 #rate_plan_list(ids(properties, unit_types, rate_plans))
 
-rate_plan_json = rate_plan_list('all')
-custom_rule = lambda elem: elem['property']['id'] in ['MUC']
+rate_plan_json = rate_plan_list('all')['ratePlans']
+custom_rule = lambda elem: elem['property']['id'] in ['BER']
 
 rate_plans = custom_list(rate_plan_json,custom_rule)
+
+
 result(rate_plans)
 
 
