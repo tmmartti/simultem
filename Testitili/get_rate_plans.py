@@ -12,7 +12,8 @@ def get_rate_plans(token, ratePlanIds):
 
     headers = {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer {0}'.format(token)
+    'Authorization': 'Bearer {0}'.format(token),
+    'Accept-Language': 'all'
     }
     if ratePlanIds == 'all':
         api_url = api_url_base
@@ -36,7 +37,6 @@ def get_rate_plans(token, ratePlanIds):
 def rate_plan_list(ratePlanIds):    
     try:
         rate_plans = get_rate_plans(old_token, ratePlanIds)
-        print ('Used an old token for get_rate_plans')
         return rate_plans
     except:
         rate_plans = get_rate_plans(new_token, ratePlanIds)
