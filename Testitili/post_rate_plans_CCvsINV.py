@@ -81,12 +81,11 @@ def promoCodes(rate_plan):
 def name(rate_plan):
     try: 
         return {
-            "de": 'deutch',
-            "en": rate_plan['name']['en'].replace('-','- Pay by Card -')
+            "en": rate_plan['name']['en'].replace('-','- Pay by Card -'),
+            "fi": rate_plan['name']['en'].replace('-','- Maksu kortilla -')
         }
     except:
         return {
-            "de": 'deutch',
             "en": rate_plan['name']['en'].replace('-','- Pay by Card -')
         }
 
@@ -116,13 +115,13 @@ def patch_json(restriction_dict, rate_plan_id):
 def description(patch_json):
     if patch_json['value']['minLengthOfStay'] != 28:
         return {
-            "de": 'deutch',
-            "en": 'Payment will be charged from the card provided prior to arrival. The rate includes VAT 10%, linen, towels, final cleaning, wifi, electricity, water and an insurance. A starter pack of toilet and kitchen paper, hand and body soap, shampoo, dish washer and washing detergent, coffee, tea etc. included.'
+            "en": 'Payment will be charged from the card provided prior to arrival. The rate includes VAT 10%, linen, towels, final cleaning, wifi and utilities such as electricity and water. A starter pack of basic amenities such as toilet paper, hand and body soap, shampoo, coffee, tea, sugar, salt and pepper included.',
+            "fi": 'Maksu veloitetaan kortilta ennen saapumista. Hinta sisältää 10% ALV:n, liinavaatteet, pyyhkeet, loppusiivouksen, langattoman netin, sähkön ja veden. Lisäksi sisältyy aloituspaketti, mikä sisältää muun muassa wc-paperia, käsi- ja suihkusaippuaa, shampoota, kahvia, teetä, sokeria, pippuria ja suolaa.'
         }
     else:
         return {
-            "de": 'deutch',
-            "en": 'Payment will be charged from the card provided prior to arrival. The rate includes VAT 10%, linen, towels, final cleaning, wifi, electricity, water and an insurance. A starter pack of toilet and kitchen paper, hand and body soap, shampoo, dish washer and washing detergent, coffee, tea etc. included. Every 2 weeks, a stayover cleaning will be provided.'
+            "en": 'Payment will be charged from the card provided prior to arrival. The rate includes VAT 10%, linen, towels, final cleaning, wifi and utilities such as electricity and water. A starter pack of basic amenities such as toilet paper, hand and body soap, shampoo, coffee, tea, sugar, salt and pepper included. Every 2 weeks, a stayover cleaning will be provided.',
+            "fi": 'Maksu veloitetaan kortilta ennen saapumista. Hinta sisältää 10% ALV:n, liinavaatteet, pyyhkeet, loppusiivouksen, langattoman netin, sähkön ja veden. Lisäksi sisältyy aloituspaketti, mikä sisältää muun muassa wc-paperia, käsi- ja suihkusaippuaa, shampoota, kahvia, teetä, sokeria, pippuria ja suolaa. Hintaan sisältyy myös välisiivous joka toinen viikko.'
         }
 
 def bookingPeriods(rate_plan):
@@ -153,7 +152,7 @@ def includedServices(rate_plan):
 
 def rp_json(rate_plan, patch_json): 
     return {
-        "code": str(rate_plan['code']) + 'Cj',
+        "code": str(rate_plan['code']) + 'CC',
         "propertyId": rate_plan['property']['id'],
         "unitGroupId": rate_plan['unitGroup']['id'],
         "cancellationPolicyId": rate_plan['cancellationPolicy']['id'],
@@ -206,7 +205,7 @@ def post_rate_plans(token, rate_plans):
         unit_type = rate_plan['unitGroup']['id'].split('-',1)[1]
         property_id = rate_plan['property']['id']
         patch_dict = patch_json(restriction_dict,rate_plan_id)
-        new_rp_id = property_id + '-' + rate_plan_code + 'Cj' + '-' + unit_type
+        new_rp_id = property_id + '-' + rate_plan_code + 'CC' + '-' + unit_type
         print (new_rp_id)
         data = json.dumps(rp_json(rate_plan, patch_dict[0]))
         post_response = requests.post(post_url, headers=headers, data=data)
@@ -257,7 +256,7 @@ def partnerCheck(elem):
     else:
         return False
 
-custom_rule = lambda elem: elem['id'] in ['BER-APALEOCQ-DBL']
+custom_rule = lambda elem: elem['property']['id'] not in ['HKIPASILA','KNUMMI'] and partnerCheck(elem)
 
 rate_plans = custom_list(rate_plan_json,custom_rule)
 
