@@ -31,7 +31,7 @@ def get_rate_plans(token, ratePlanIds):
                 append_json = json.loads(id_specific_response.content)
                 responses.append(append_json)
             else:
-                print ('Failed to get rate plan with id' + x)
+                print ('Failed to get rate plan with id ' + x)
         return responses
     
 def rate_plan_list(ratePlanIds):    
@@ -49,8 +49,17 @@ def custom_list(rate_plan_json, custom_rule):
 
 #rate_plan_json = rate_plan_list('all')['ratePlans']
 
-#custom_rule = lambda elem: elem['property']['id'] in ['BER']
+#def partnerCheck(elem):
+#    if 'promoCodes' in elem:
+#        if 'PARTNER' in elem['promoCodes']:
+#            return True
+#    else:
+#        return False
+
+#custom_rule = lambda elem: elem['property']['id'] not in ['TURKU1'] and 'CC' not in elem['code'] and partnerCheck(elem)
 
 #rate_plans = custom_list(rate_plan_json,custom_rule)
-#print (rate_plans[0])
+#for rp in rate_plans:
+#    print (rp['id'])
+
 
